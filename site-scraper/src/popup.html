@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Site Scraper</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="popup">
+  <h1>Site Scraper</h1>
+
+  <div class="row">
+    <button id="scrape" class="primary">Scrape this page</button>
+    <button id="crawl">Crawl whole site…</button>
+  </div>
+  <div class="row">
+    <label><input type="checkbox" id="mainOnly"> Main content only (skip nav, header, footer)</label>
+  </div>
+
+  <p id="status" class="muted"></p>
+
+  <section id="result" class="hidden">
+    <div id="pageTitle" class="title-line"></div>
+    <div class="stats">
+      <div class="stat"><b id="words">0</b><span>words</span></div>
+      <div class="stat"><b id="headings">0</b><span>headings</span></div>
+      <div class="stat"><b id="links">0</b><span>links</span></div>
+      <div class="stat"><b id="images">0</b><span>images</span></div>
+    </div>
+    <textarea id="preview" rows="12" readonly></textarea>
+    <div class="row">
+      <button id="copyMd">Copy Markdown</button>
+      <button id="copyText">Copy text</button>
+    </div>
+    <div class="row">
+      <span class="muted">Download:</span>
+      <button data-export="md">.md</button>
+      <button data-export="txt">.txt</button>
+      <button data-export="json">.json</button>
+      <button data-export="links">links.csv</button>
+      <button data-export="images">images.csv</button>
+    </div>
+  </section>
+
+  <script src="export.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>

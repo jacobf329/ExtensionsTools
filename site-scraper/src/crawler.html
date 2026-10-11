@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Site Scraper – Crawl</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="crawler">
+  <h1>Crawl a whole site</h1>
+  <p class="muted">
+    Starts at the URL below, follows links on the same site, and scrapes every page it reaches.
+    Keep this tab open while it runs.
+  </p>
+
+  <div class="form">
+    <label for="start">Start URL</label>
+    <input type="url" id="start" placeholder="https://example.com/" required>
+
+    <label for="maxPages">Max pages</label>
+    <input type="number" id="maxPages" min="1" max="10000" value="100">
+
+    <label for="concurrency">Parallel requests</label>
+    <input type="number" id="concurrency" min="1" max="10" value="3">
+
+    <label for="delay">Delay between requests (ms)</label>
+    <input type="number" id="delay" min="0" max="60000" value="300">
+
+    <span>Options</span>
+    <div>
+      <label><input type="checkbox" id="samePath"> Stay under the start URL’s folder</label><br>
+      <label><input type="checkbox" id="mainOnly"> Main content only (skip nav, header, footer)</label><br>
+      <label><input type="checkbox" id="robots" checked> Respect robots.txt</label><br>
+      <label><input type="checkbox" id="sitemap" checked> Also seed from sitemap.xml</label>
+    </div>
+  </div>
+
+  <div class="row">
+    <button id="startBtn" class="primary">Start crawl</button>
+    <button id="stopBtn" disabled>Stop</button>
+  </div>
+
+  <p id="status" class="muted"></p>
+  <progress id="progress" value="0" max="1" class="hidden"></progress>
+
+  <div class="stats">
+    <div class="stat"><b id="pages">0</b><span>pages scraped</span></div>
+    <div class="stat"><b id="queued">0</b><span>queued</span></div>
+    <div class="stat"><b id="words">0</b><span>words</span></div>
+    <div class="stat"><b id="errors">0</b><span>errors / skipped</span></div>
+  </div>
+
+  <h2>Export</h2>
+  <div class="row">
+    <button data-export="md" disabled>All pages (.md)</button>
+    <button data-export="txt" disabled>All pages (.txt)</button>
+    <button data-export="json" disabled>Everything (.json)</button>
+    <button data-export="pages" disabled>pages.csv</button>
+    <button data-export="links" disabled>links.csv</button>
+    <button data-export="images" disabled>images.csv</button>
+    <button data-export="emails" disabled>emails.csv</button>
+  </div>
+
+  <h2>Log</h2>
+  <div id="log" class="log"></div>
+
+  <script src="extractor.js"></script>
+  <script src="export.js"></script>
+  <script src="crawler.js"></script>
+</body>
+</html>
