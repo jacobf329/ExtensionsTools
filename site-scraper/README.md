@@ -17,6 +17,7 @@ Click the toolbar icon, then **Scrape this page**. You get:
 - word, heading, link and image counts, plus a Markdown preview
 - **Copy Markdown** / **Copy text** to the clipboard
 - downloads: `.md`, `.txt`, `.json` (everything), `links.csv`, `images.csv`
+- **images.zip**: every image on the page in one ZIP (opens a small download tab)
 
 This reads the page as rendered in your tab, so it works on JavaScript-heavy sites and on pages
 you're logged in to. Tick **Main content only** to skip navigation, headers, footers and sidebars.
@@ -37,8 +38,18 @@ Click **Crawl whole site…**. A crawler tab opens with the current page as the 
 Chrome asks once for permission to read that site. Keep the crawler tab open while it runs; you
 can **Stop** at any time and still export what was collected.
 
-Exports: all pages as one `.md` or `.txt`, a `.json` with everything, and `pages.csv`,
-`links.csv`, `images.csv`, `emails.csv`.
+Exports: all pages as one `.md` or `.txt`, a `.json` with everything, `pages.csv`,
+`links.csv`, `images.csv`, `emails.csv`, and **All images (.zip)**.
+
+## Image ZIPs
+
+The ZIP holds each image once (even if it appears on many pages) plus an `index.csv` mapping
+every file back to its original URL, alt text and the page it was found on. Clashing filenames
+get a suffix (`photo.png`, `photo-2.png`), and files whose URL has no extension get one from
+their content. Images that fail to download are listed in the log and skipped.
+
+Images are often hosted on other domains (CDNs), so Chrome asks for permission to read those
+too. ZIPs are capped at about 3.5 GB.
 
 ## What gets extracted
 
@@ -60,6 +71,9 @@ clean Markdown, plain text and a word count.
 manifest.json      Manifest V3 config
 src/extractor.js   HTML → Markdown/text/structured data (shared by popup and crawler)
 src/export.js      CSV/Markdown formatting and downloads
+src/zip.js         Minimal ZIP writer (no dependencies)
+src/imagezip.js    Fetches images and packs them into a ZIP
+src/images.*       Image ZIP download tab (opened from the popup)
 src/popup.*        Toolbar popup (single page)
 src/crawler.*      Full-site crawler page
 src/styles.css     Shared styles (light/dark)

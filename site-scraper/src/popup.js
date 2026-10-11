@@ -74,9 +74,24 @@ document.querySelectorAll('[data-export]').forEach((btn) => {
       case 'json': return X.download(JSON.stringify(page, null, 2), `${name}.json`, 'application/json');
       case 'links': return X.download(X.linksCsv([page]), `${name}-links.csv`, 'text/csv');
       case 'images': return X.download(X.imagesCsv([page]), `${name}-images.csv`, 'text/csv');
+      case 'zip': return openImageDownloader();
     }
   });
 });
+
+// Image downloads may need a permission prompt, which can close the popup,
+// so the ZIP is built in its own tab.
+async function openImageDownloader() {
+  if (!page.images.length) {
+    setStatus('No images found on this page.', 'error');
+    return;
+  }
+  await chrome.storage.session.set({
+    imageJob: { source: page.url, title: page.title, images: page.images.map((i) => ({ ...i, page: page.url })) },
+  });
+  chrome.tabs.create({ url: chrome.runtime.getURL('src/images.html') });
+  window.close();
+}
 
 $('crawl').addEventListener('click', async () => {
   const tab = await activeTab();

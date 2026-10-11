@@ -53,9 +53,13 @@
   }
 
   function download(content, filename, mime) {
-    // A BOM keeps Excel from mangling UTF-8 CSVs.
-    const parts = mime === 'text/csv' ? ['﻿', content] : [content];
-    const url = URL.createObjectURL(new Blob(parts, { type: `${mime};charset=utf-8` }));
+    let blob = content;
+    if (!(content instanceof Blob)) {
+      // A BOM keeps Excel from mangling UTF-8 CSVs.
+      const parts = mime === 'text/csv' ? ['\ufeff', content] : [content];
+      blob = new Blob(parts, { type: `${mime};charset=utf-8` });
+    }
+    const url = URL.createObjectURL(blob);
     chrome.downloads.download({ url, filename, saveAs: false }, () => {
       setTimeout(() => URL.revokeObjectURL(url), 60000);
     });

@@ -301,6 +301,7 @@ document.querySelectorAll('[data-export]').forEach((btn) => {
       case 'pages': return X.download(X.pagesCsv(pages), `${name}-pages.csv`, 'text/csv');
       case 'links': return X.download(X.linksCsv(pages), `${name}-links.csv`, 'text/csv');
       case 'images': return X.download(X.imagesCsv(pages), `${name}-images.csv`, 'text/csv');
+      case 'zip': return downloadImagesZip(btn);
       case 'emails': {
         const found = new Map();
         for (const p of pages) for (const e of p.emails) if (!found.has(e)) found.set(e, p.url);
@@ -309,3 +310,43 @@ document.querySelectorAll('[data-export]').forEach((btn) => {
     }
   });
 });
+
+async function downloadImagesZip(btn) {
+  const I = globalThis.SiteScraperImages;
+  const images = I.collectImages(crawl.pages);
+  if (!images.length) {
+    setStatus('No images were found on the crawled pages.', 'error');
+    return;
+  }
+  // Images are often served from CDNs on other domains, which need their own permission.
+  const granted = await chrome.permissions.request({ origins: I.originPatterns(images) });
+  if (!granted) {
+    setStatus('Permission to download the images was not granted.', 'error');
+    return;
+  }
+
+  btn.disabled = true;
+  $('startBtn').disabled = true;
+  $('progress').classList.remove('hidden');
+  $('progress').max = images.length;
+  $('progress').value = 0;
+  try {
+    const result = await I.buildImageZip(images, {
+      onProgress: (done, total, failed) => {
+        $('progress').value = done;
+        setStatus(`Downloading images: ${done} / ${total}${failed ? ` (${failed} failed)` : ''}…`);
+      },
+      onError: (src, message) => log(`✗ ${src}  ${message}`, 'error'),
+    });
+    X.download(result.blob, `${X.slug(crawl.origin)}-images.zip`, 'application/zip');
+    const notes = [result.failed ? `${result.failed} failed` : '', result.truncated ? 'stopped at the ZIP size limit' : '']
+      .filter(Boolean).join(', ');
+    setStatus(`Saved ${result.saved} images to the ZIP${notes ? ` (${notes})` : ''}.`, 'ok');
+  } catch (err) {
+    setStatus('Image download failed: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    $('startBtn').disabled = false;
+    updateStats();
+  }
+}

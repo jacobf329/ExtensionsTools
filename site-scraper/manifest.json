@@ -3,7 +3,7 @@
   "name": "Site Scraper",
   "version": "1.0.0",
   "description": "Grab all the content from a page, or crawl a whole site, and export it as Markdown, text, JSON or CSV.",
-  "permissions": ["activeTab", "scripting", "downloads"],
+  "permissions": ["activeTab", "scripting", "downloads", "storage"],
   "optional_host_permissions": ["http://*/*", "https://*/*"],
   "action": {
     "default_title": "Site Scraper",
