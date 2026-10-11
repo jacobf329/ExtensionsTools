@@ -171,6 +171,58 @@
     return lines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
   }
 
+  // Common containers for the main content when a page has no <main>.
+  const MAIN_SELECTORS = [
+    'main', '[role="main"]', 'article', '#main', '#content', '.content', '.entry-content',
+    '.post-content', '.article-content', '.post-body', '.elementor-widget-theme-post-content',
+  ].join(', ');
+
+  /** Length of visible-ish text under an element, ignoring scripts, styles and site chrome. */
+  function textLength(el, opts) {
+    const ctx = { live: opts.live };
+    let total = 0;
+    const walk = (node) => {
+      for (const child of node.childNodes) {
+        if (child.nodeType === 3) {
+          total += child.nodeValue.replace(/\s+/g, ' ').trim().length;
+        } else if (child.nodeType === 1) {
+          const tag = child.tagName.toUpperCase();
+          if (SKIP_TAGS.has(tag) || CHROME_TAGS.has(tag) || isHidden(child, ctx)) continue;
+          walk(child);
+        }
+      }
+    };
+    walk(el);
+    return total;
+  }
+
+  function insideChrome(el, body) {
+    for (let n = el.parentElement; n && n !== body; n = n.parentElement) {
+      if (CHROME_TAGS.has(n.tagName.toUpperCase())) return true;
+    }
+    return false;
+  }
+
+  // Picks the largest main-content container. Taking the first <article> or
+  // <main> isn't safe: many sites put small "latest post" cards (often
+  // <article>s) in the header or sidebar ahead of the real content.
+  function findMainContent(doc, body, opts) {
+    const bodyLength = textLength(body, opts);
+    let best = null;
+    let bestLength = 0;
+    for (const el of doc.querySelectorAll(MAIN_SELECTORS)) {
+      if (el === body || CHROME_TAGS.has(el.tagName.toUpperCase()) || insideChrome(el, body)) continue;
+      const length = textLength(el, opts);
+      if (length > bestLength) {
+        best = el;
+        bestLength = length;
+      }
+    }
+    // If no container holds a good share of the page's text, the guess is
+    // probably wrong; use the whole page minus nav/header/footer/sidebars.
+    return best && bestLength >= bodyLength * 0.25 ? best : body;
+  }
+
   function meta(doc, name) {
     const el = doc.querySelector(`meta[name="${name}"], meta[property="${name}"]`);
     return el ? (el.getAttribute('content') || '').trim() : '';
@@ -189,9 +241,7 @@
     const origin = new URL(url).origin;
 
     let rootEl = doc.body || doc.documentElement;
-    if (opts.mainOnly) {
-      rootEl = doc.querySelector('main, [role="main"], article') || rootEl;
-    }
+    if (opts.mainOnly && rootEl) rootEl = findMainContent(doc, rootEl, opts);
 
     const ctx = {
       base, live: opts.live, mainOnly: opts.mainOnly, includeImages: opts.includeImages,

@@ -359,12 +359,26 @@ $('startBtn').addEventListener('click', async () => {
   setExportsEnabled(crawl.pages.length > 0);
   const left = crawl.queue.length ? ` ${crawl.queue.length.toLocaleString()} URLs were left in the queue.` : '';
   const why = crawl.memoryStop ? ' (memory limit reached; export now, then crawl a smaller section)' : '';
+  const thin = thinContentHint();
   setStatus(
     `${stopped ? 'Stopped' : 'Done'}${why}: scraped ${crawl.pages.length.toLocaleString()} pages ` +
-      `(${X.formatBytes(crawl.bytes)}) in ${X.formatDuration(crawl.finishedAt - crawl.startedMs)}.${left}`,
+      `(${X.formatBytes(crawl.bytes)}) in ${X.formatDuration(crawl.finishedAt - crawl.startedMs)}.${left}${thin}`,
     crawl.pages.length ? 'ok' : 'error'
   );
 });
+
+// Flags crawls where most pages came back nearly empty, which usually means
+// the wrong part of the page was picked or the site builds pages with JavaScript.
+function thinContentHint() {
+  if (crawl.pages.length < 5) return '';
+  const counts = crawl.pages.map((p) => p.wordCount).sort((a, b) => a - b);
+  const median = counts[Math.floor(counts.length / 2)];
+  if (median >= 30) return '';
+  const fix = crawl.mainOnly
+    ? 'try again with “Main content only” turned off'
+    : 'the site may build its pages with JavaScript; use “Scrape this page” from the popup instead';
+  return ` Most pages had very little text (median ${median} words); ${fix}.`;
+}
 
 $('stopBtn').addEventListener('click', () => {
   if (!crawl) return;
