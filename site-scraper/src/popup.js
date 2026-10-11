@@ -1,6 +1,7 @@
 const $ = (id) => document.getElementById(id);
 const X = globalThis.SiteScraperExport;
 let page = null;
+let withImages = false; // whether the last scrape collected images
 
 function setStatus(message, kind) {
   $('status').textContent = message;
@@ -12,14 +13,17 @@ async function activeTab() {
   return tab;
 }
 
-try {
-  $('mainOnly').checked = localStorage.getItem('mainOnly') === '1';
-} catch (e) { /* storage unavailable */ }
-$('mainOnly').addEventListener('change', () => {
+// Remember checkbox choices between popup openings.
+for (const id of ['mainOnly', 'includeImages']) {
   try {
-    localStorage.setItem('mainOnly', $('mainOnly').checked ? '1' : '0');
+    $(id).checked = localStorage.getItem(id) === '1';
   } catch (e) { /* storage unavailable */ }
-});
+  $(id).addEventListener('change', () => {
+    try {
+      localStorage.setItem(id, $(id).checked ? '1' : '0');
+    } catch (e) { /* storage unavailable */ }
+  });
+}
 
 $('scrape').addEventListener('click', async () => {
   const tab = await activeTab();
@@ -33,12 +37,14 @@ $('scrape').addEventListener('click', async () => {
     await chrome.scripting.executeScript({ target: { tabId: tab.id }, files: ['src/extractor.js'] });
     const [{ result }] = await chrome.scripting.executeScript({
       target: { tabId: tab.id },
-      args: [$('mainOnly').checked],
-      func: (mainOnly) => globalThis.SiteScraperExtract(document, location.href, { mainOnly, live: true }),
+      args: [$('mainOnly').checked, $('includeImages').checked],
+      func: (mainOnly, includeImages) =>
+        globalThis.SiteScraperExtract(document, location.href, { mainOnly, includeImages, live: true }),
     });
     page = result;
+    withImages = $('includeImages').checked;
     render();
-    setStatus(`Scraped ${page.wordCount.toLocaleString()} words.`, 'ok');
+    setStatus(`Scraped ${page.wordCount.toLocaleString()} words (${X.formatBytes(X.pageBytes(page))} as JSON).`, 'ok');
   } catch (err) {
     setStatus('Scrape failed: ' + err.message, 'error');
   } finally {
@@ -53,7 +59,8 @@ function render() {
   $('words').textContent = page.wordCount.toLocaleString();
   $('headings').textContent = page.headings.length;
   $('links').textContent = page.links.length;
-  $('images').textContent = page.images.length;
+  $('images').textContent = withImages ? page.images.length : 'off';
+  document.querySelectorAll('.image-only').forEach((b) => b.classList.toggle('hidden', !withImages));
   $('preview').value = page.markdown;
 }
 

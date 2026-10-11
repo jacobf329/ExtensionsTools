@@ -100,6 +100,9 @@ body.crawler { padding: 24px; max-width: 960px; margin: 0 auto; }
 .form input[type="url"] { width: 100%; }
 .form input[type="number"] { width: 90px; }
 progress { width: 100%; height: 10px; }
+.estimate table { border-collapse: collapse; width: 100%; }
+.estimate td { padding: 4px 8px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.estimate td:first-child { color: var(--muted); white-space: nowrap; }
 .log {
   max-height: 360px;
   overflow: auto;

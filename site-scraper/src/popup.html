@@ -15,6 +15,9 @@
   <div class="row">
     <label><input type="checkbox" id="mainOnly"> Main content only (skip nav, header, footer)</label>
   </div>
+  <div class="row">
+    <label><input type="checkbox" id="includeImages"> Include images (off = text only)</label>
+  </div>
 
   <p id="status" class="muted"></p>
 
@@ -37,8 +40,8 @@
       <button data-export="txt">.txt</button>
       <button data-export="json">.json</button>
       <button data-export="links">links.csv</button>
-      <button data-export="images">images.csv</button>
-      <button data-export="zip">images.zip</button>
+      <button data-export="images" class="image-only">images.csv</button>
+      <button data-export="zip" class="image-only">images.zip</button>
     </div>
   </section>
 

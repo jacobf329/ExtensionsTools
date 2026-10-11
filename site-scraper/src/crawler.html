@@ -29,24 +29,39 @@
     <div>
       <label><input type="checkbox" id="samePath"> Stay under the start URL’s folder</label><br>
       <label><input type="checkbox" id="mainOnly"> Main content only (skip nav, header, footer)</label><br>
+      <label><input type="checkbox" id="includeImages"> Include images (off = text only, smaller and faster)</label><br>
       <label><input type="checkbox" id="robots" checked> Respect robots.txt</label><br>
       <label><input type="checkbox" id="sitemap" checked> Also seed from sitemap.xml</label>
     </div>
   </div>
 
   <div class="row">
+    <button id="estimateBtn">Estimate time &amp; size</button>
     <button id="startBtn" class="primary">Start crawl</button>
     <button id="stopBtn" disabled>Stop</button>
   </div>
 
+  <section id="estimate" class="estimate hidden">
+    <h2>Estimate</h2>
+    <table id="estimateTable"></table>
+    <p id="estimateWarn" class="error hidden"></p>
+  </section>
+
   <p id="status" class="muted"></p>
   <progress id="progress" value="0" max="1" class="hidden"></progress>
+  <p id="speed" class="muted"></p>
 
   <div class="stats">
     <div class="stat"><b id="pages">0</b><span>pages scraped</span></div>
     <div class="stat"><b id="queued">0</b><span>queued</span></div>
     <div class="stat"><b id="words">0</b><span>words</span></div>
     <div class="stat"><b id="errors">0</b><span>errors / skipped</span></div>
+  </div>
+  <div class="stats">
+    <div class="stat"><b id="elapsed">–</b><span>elapsed</span></div>
+    <div class="stat"><b id="timeLeft">–</b><span>time left (est.)</span></div>
+    <div class="stat"><b id="dataSize">–</b><span>data collected</span></div>
+    <div class="stat"><b id="memory">–</b><span>tab memory</span></div>
   </div>
 
   <h2>Export</h2>
@@ -56,8 +71,8 @@
     <button data-export="json" disabled>Everything (.json)</button>
     <button data-export="pages" disabled>pages.csv</button>
     <button data-export="links" disabled>links.csv</button>
-    <button data-export="images" disabled>images.csv</button>
-    <button data-export="zip" disabled>All images (.zip)</button>
+    <button data-export="images" class="image-only" disabled>images.csv</button>
+    <button data-export="zip" class="image-only" disabled>All images (.zip)</button>
     <button data-export="emails" disabled>emails.csv</button>
   </div>
 

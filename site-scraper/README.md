@@ -5,10 +5,15 @@ Markdown, plain text, JSON or CSV.
 
 ## Install (developer mode)
 
-1. Open `chrome://extensions` in Chrome (or any Chromium browser: Edge, Brave, Arc).
-2. Turn on **Developer mode** (top right).
-3. Click **Load unpacked** and select this `site-scraper` folder.
-4. Pin the extension from the puzzle-piece menu so it's one click away.
+1. Get the files: download this repository as a ZIP from GitHub (green **Code** button →
+   **Download ZIP**) and unzip it, or `git clone` it.
+2. Open `chrome://extensions` in Chrome (or any Chromium browser: Edge, Brave, Arc).
+3. Turn on **Developer mode** (top right).
+4. Click **Load unpacked** and select the `site-scraper` folder (the one containing `manifest.json`).
+5. Pin the extension from the puzzle-piece menu so it's one click away.
+
+To update after changing or re-downloading the files, click the reload arrow on the extension's
+card in `chrome://extensions`. Don't delete the folder; Chrome loads the extension from it.
 
 ## Scrape one page
 
@@ -22,6 +27,9 @@ Click the toolbar icon, then **Scrape this page**. You get:
 This reads the page as rendered in your tab, so it works on JavaScript-heavy sites and on pages
 you're logged in to. Tick **Main content only** to skip navigation, headers, footers and sidebars.
 
+Images are **off by default** (text only). Tick **Include images** to list them and enable the
+image downloads. Your checkbox choices are remembered.
+
 ## Crawl a whole site
 
 Click **Crawl whole site…**. A crawler tab opens with the current page as the start URL.
@@ -34,6 +42,29 @@ Click **Crawl whole site…**. A crawler tab opens with the current page as the 
 | Stay under the start URL's folder | e.g. start at `/blog/` to crawl just the blog. |
 | Respect robots.txt | Skips paths the site disallows. |
 | Also seed from sitemap.xml | Finds pages that aren't linked from anywhere. |
+| Include images | Off by default (text only). Turn on to collect image lists and enable the image ZIP. |
+
+Settings are remembered between crawls.
+
+### Before a big crawl: Estimate time & size
+
+**Estimate time & size** reads the sitemap to count the site's pages, then loads 10 sample
+pages spread across the site to measure how long each takes and how much data it produces. It
+shows:
+
+- how many pages the site has (exact from the sitemap, otherwise a lower bound)
+- time, export size and browser memory for your **Max pages** limit, and for the whole site
+- with images on: roughly how many images there are and how big the ZIP will be
+
+Figures are rough. Real time depends on how the server responds during the crawl.
+
+### While crawling
+
+The crawler shows elapsed time, estimated time left, pages per minute, how much data has been
+collected and how much memory the tab is using. Results are kept in the tab's memory until you
+export them. If memory gets close to Chrome's per-tab limit (usually a few GB), the crawl stops
+by itself so the tab doesn't crash; export what you have, then crawl a smaller section with
+**Stay under the start URL's folder**.
 
 Chrome asks once for permission to read that site. Keep the crawler tab open while it runs; you
 can **Stop** at any time and still export what was collected.

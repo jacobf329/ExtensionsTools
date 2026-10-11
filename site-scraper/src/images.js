@@ -44,19 +44,23 @@ $('startBtn').addEventListener('click', async () => {
   $('progress').classList.remove('hidden');
   $('progress').max = job.images.length;
   $('progress').value = 0;
+  const t0 = Date.now();
   try {
     const result = await I.buildImageZip(job.images, {
       signal: abort.signal,
-      onProgress: (done, total, failed) => {
+      onProgress: (done, total, failed, bytes) => {
         $('progress').value = done;
-        setStatus(`Downloading images: ${done} / ${total}${failed ? ` (${failed} failed)` : ''}…`);
+        const left = done ? ` · ~${X.formatDuration(((Date.now() - t0) / done) * (total - done))} left` : '';
+        setStatus(
+          `Downloading images: ${done} / ${total}${failed ? ` (${failed} failed)` : ''} · ${X.formatBytes(bytes)}${left}…`
+        );
       },
       onError: (src, message) => log(`✗ ${src}  ${message}`, 'error'),
     });
     X.download(result.blob, `${X.slug(job.source)}-images.zip`, 'application/zip');
     const notes = [result.failed ? `${result.failed} failed` : '', result.truncated ? 'stopped at the ZIP size limit' : '']
       .filter(Boolean).join(', ');
-    setStatus(`Saved ${result.saved} images to the ZIP${notes ? ` (${notes})` : ''}.`, result.saved ? 'ok' : 'error');
+    setStatus(`Saved ${result.saved} images (${X.formatBytes(result.blob.size)}) to the ZIP${notes ? ` (${notes})` : ''}.`, result.saved ? 'ok' : 'error');
   } catch (err) {
     setStatus(err.name === 'AbortError' ? 'Cancelled.' : 'Image download failed: ' + err.message, 'error');
   } finally {

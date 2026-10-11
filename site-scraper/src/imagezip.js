@@ -96,7 +96,7 @@
   /**
    * @param {{src: string, alt: string, page: string}[]} images
    * @param {{signal?: AbortSignal, concurrency?: number,
-   *          onProgress?: (done: number, total: number, failed: number) => void,
+   *          onProgress?: (done: number, total: number, failed: number, bytes: number) => void,
    *          onError?: (src: string, message: string) => void}} [options]
    * @returns {Promise<{blob: Blob, saved: number, failed: number, truncated: boolean}>}
    */
@@ -129,7 +129,7 @@
           if (opts.onError) opts.onError(img.src, err.message);
         }
         done++;
-        if (opts.onProgress) opts.onProgress(done, images.length, failed);
+        if (opts.onProgress) opts.onProgress(done, images.length, failed, zip.size);
       }
     }
 

@@ -52,6 +52,33 @@
     return csv(rows);
   }
 
+  function formatBytes(bytes) {
+    if (!isFinite(bytes)) return '?';
+    const units = ['B', 'KB', 'MB', 'GB', 'TB'];
+    let i = 0;
+    while (bytes >= 1024 && i < units.length - 1) {
+      bytes /= 1024;
+      i++;
+    }
+    return `${bytes >= 100 || i === 0 ? Math.round(bytes) : bytes.toFixed(1)} ${units[i]}`;
+  }
+
+  function formatDuration(ms) {
+    if (!isFinite(ms)) return '?';
+    const s = Math.max(0, Math.round(ms / 1000));
+    if (s < 60) return `${s}s`;
+    const m = Math.floor(s / 60);
+    if (m < 60) return `${m}m ${s % 60}s`;
+    const h = Math.floor(m / 60);
+    if (h < 24) return `${h}h ${m % 60}m`;
+    return `${Math.floor(h / 24)}d ${h % 24}h`;
+  }
+
+  // Approximate size of a page record when exported as JSON.
+  function pageBytes(page) {
+    return new Blob([JSON.stringify(page)]).size;
+  }
+
   function download(content, filename, mime) {
     let blob = content;
     if (!(content instanceof Blob)) {
@@ -65,5 +92,6 @@
     });
   }
 
-  root.SiteScraperExport = { slug, pageMarkdown, pageText, csv, linksCsv, imagesCsv, pagesCsv, download };
+  root.SiteScraperExport = { slug, pageMarkdown, pageText, csv, linksCsv, imagesCsv, pagesCsv,
+    formatBytes, formatDuration, pageBytes, download };
 })(globalThis);

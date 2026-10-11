@@ -91,7 +91,7 @@
         return `[${text}](${href})`;
       }
       case 'IMG': {
-        if (!md) return '';
+        if (!md || !ctx.includeImages) return '';
         const src = imgSrc(el, ctx.base);
         if (!src || src.startsWith('data:')) return '';
         return `![${(el.getAttribute('alt') || '').trim()}](${src})`;
@@ -180,10 +180,10 @@
    * Extracts content from a document.
    * @param {Document} doc
    * @param {string} url  The page URL (used to resolve relative links).
-   * @param {{mainOnly?: boolean, live?: boolean}} [options]
+   * @param {{mainOnly?: boolean, live?: boolean, includeImages?: boolean}} [options]
    */
   function extract(doc, url, options) {
-    const opts = Object.assign({ mainOnly: false, live: false }, options);
+    const opts = Object.assign({ mainOnly: false, live: false, includeImages: true }, options);
     const baseEl = doc.querySelector('base[href]');
     const base = baseEl ? absUrl(baseEl.getAttribute('href'), url) || url : url;
     const origin = new URL(url).origin;
@@ -193,7 +193,10 @@
       rootEl = doc.querySelector('main, [role="main"], article') || rootEl;
     }
 
-    const ctx = { base, live: opts.live, mainOnly: opts.mainOnly, listDepth: 0, pre: false, plain: false };
+    const ctx = {
+      base, live: opts.live, mainOnly: opts.mainOnly, includeImages: opts.includeImages,
+      listDepth: 0, pre: false, plain: false,
+    };
     const markdown = rootEl ? tidy(convert(rootEl, ctx)) : '';
     const text = rootEl ? tidy(convert(rootEl, Object.assign({}, ctx, { plain: true }))) : '';
 
@@ -225,7 +228,7 @@
 
     const seenImages = new Set();
     const images = [];
-    for (const img of scope.querySelectorAll('img')) {
+    for (const img of opts.includeImages ? scope.querySelectorAll('img') : []) {
       const src = imgSrc(img, base);
       if (!src || src.startsWith('data:') || seenImages.has(src)) continue;
       seenImages.add(src);
