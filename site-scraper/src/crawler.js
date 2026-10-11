@@ -17,7 +17,7 @@ const params = new URLSearchParams(location.search);
 if (params.get('start')) $('start').value = params.get('start');
 
 // Remember settings between crawls.
-const SETTINGS = ['maxPages', 'concurrency', 'delay', 'samePath', 'mainOnly', 'includeImages', 'robots', 'sitemap'];
+const SETTINGS = ['maxPages', 'concurrency', 'delay', 'samePath', 'mainOnly', 'includeImages', 'robots', 'sitemap', 'autoJson'];
 for (const id of SETTINGS) {
   const el = $(id);
   const key = 'crawler:' + id;
@@ -365,6 +365,16 @@ $('startBtn').addEventListener('click', async () => {
       `(${X.formatBytes(crawl.bytes)}) in ${X.formatDuration(crawl.finishedAt - crawl.startedMs)}.${left}${thin}`,
     crawl.pages.length ? 'ok' : 'error'
   );
+
+  // Save straight away (also after Stop or a memory stop) so a closed tab can't lose the results.
+  if ($('autoJson').checked && crawl.pages.length) {
+    try {
+      downloadJson();
+      log(`Saved ${X.slug(crawl.origin)}.json to your Downloads folder`, 'ok');
+    } catch (err) {
+      log(`Automatic JSON download failed (${err.message}); try the export buttons`, 'error');
+    }
+  }
 });
 
 // Flags crawls where most pages came back nearly empty, which usually means
@@ -544,6 +554,15 @@ function showEstimate(samples, uniqueImages, imagesSeen, imageBytes) {
 
 // --- Export ---------------------------------------------------------------
 
+function downloadJson() {
+  const pages = crawl.pages;
+  X.download(
+    JSON.stringify({ site: crawl.origin, crawledAt: crawl.startedAt, pageCount: pages.length, pages }, null, 2),
+    `${X.slug(crawl.origin)}.json`,
+    'application/json'
+  );
+}
+
 document.querySelectorAll('[data-export]').forEach((btn) => {
   btn.addEventListener('click', () => {
     const pages = crawl.pages;
@@ -553,12 +572,7 @@ document.querySelectorAll('[data-export]').forEach((btn) => {
         return X.download(pages.map(X.pageMarkdown).join('\n\n'), `${name}.md`, 'text/markdown');
       case 'txt':
         return X.download(pages.map(X.pageText).join('\n\n========\n\n'), `${name}.txt`, 'text/plain');
-      case 'json':
-        return X.download(
-          JSON.stringify({ site: crawl.origin, crawledAt: crawl.startedAt, pageCount: pages.length, pages }, null, 2),
-          `${name}.json`,
-          'application/json'
-        );
+      case 'json': return downloadJson();
       case 'pages': return X.download(X.pagesCsv(pages), `${name}-pages.csv`, 'text/csv');
       case 'links': return X.download(X.linksCsv(pages), `${name}-links.csv`, 'text/csv');
       case 'images': return X.download(X.imagesCsv(pages), `${name}-images.csv`, 'text/csv');

@@ -43,6 +43,7 @@ Click **Crawl whole site…**. A crawler tab opens with the current page as the 
 | Respect robots.txt | Skips paths the site disallows. |
 | Also seed from sitemap.xml | Finds pages that aren't linked from anywhere. |
 | Include images | Off by default (text only). Turn on to collect image lists and enable the image ZIP. |
+| Auto-download everything (.json) when finished | On by default. Saves the full JSON to your Downloads folder as soon as the crawl ends, including when you press Stop or it stops at the memory limit. |
 
 Settings are remembered between crawls.
 
